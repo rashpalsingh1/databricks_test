@@ -55,6 +55,8 @@ display(coffee_lower)
 
 # COMMAND ----------
 
+from pyspark.sql.functions import col
+
 coffee_lower = coffee_lower.withColumn("calorie_diff", 135 - col("calories"))
 
 # COMMAND ----------
@@ -92,13 +94,39 @@ coffee_lower.groupBy("beverage_prep").agg(mean("calories")).sort("avg(calories)"
 
 # COMMAND ----------
 
+avg_calories = coffee_lower.select(mean("calories")).collect()[0][0]
 
+# COMMAND ----------
+
+from pyspark.sql.functions import lit
+
+coffee_lower = coffee_lower.withColumn("avg_calories", lit(avg_calories))
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+display(coffee_lower)
+
+# COMMAND ----------
+
+coffee_lower.groupBy("beverage_prep").agg(mean("calories")).filter(col("avg(calories)") > avg_calories).sort("avg(calories)", ascending = False).show()
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC Question 7
 # MAGIC Which is the best type of coffee drink to get if you’re worried about consuming too many calories?
+
+# COMMAND ----------
+
+coffee_lower.filter(col("beverage_category").like('%Coffee%')).sort("calories").show(1)
+
+# COMMAND ----------
+
+coffee_lower.groupBy("beverage_category").count().show(truncate = False)
 
 # COMMAND ----------
 
